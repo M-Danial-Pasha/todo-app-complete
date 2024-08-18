@@ -124,7 +124,36 @@ const login = asyncHandler( async (req, res) => {
     )
 });
 
+//Logout User
+const logout = asyncHandler( async (req, res) => {
+
+    const loggedInUser = req?.user;
+
+    if(!loggedInUser) {
+        throw new ApiError(StatusCodes.FORBIDDEN, "No user logged in");
+    }
+
+    loggedInUser.refresh_token = "";
+    loggedInUser.save();
+
+    //Creating Cookies Options
+    const cookieOptions = {
+        httpOnly: true,
+        secure: true,
+    }
+
+    return res
+    .status(StatusCodes.OK)
+    .clearCookie("accessToken", cookieOptions)
+    .clearCookie("refreshToken", cookieOptions)
+    .json(
+        new ApiResponse(StatusCodes.OK, {}, "User logged out successfully.")
+    )
+
+});
+
 export {
     signUp,
-    login
+    login,
+    logout
 }

@@ -23,3 +23,15 @@ export const generateUserRefreshToken = (data) => {
         throw Error(`Something went wrong while generating refresh token: ERROR => ${error}`)
     }
 }
+
+export const decodeToken = (token) => {
+    try {
+
+        const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+
+        return decodedToken;
+        
+    } catch (error) {
+        throw Error(`Expired Token`)
+    }
+}
