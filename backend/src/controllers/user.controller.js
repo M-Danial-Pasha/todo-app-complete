@@ -152,8 +152,26 @@ const logout = asyncHandler( async (req, res) => {
 
 });
 
+//Get Current Logged In User
+const getMe = asyncHandler( async (req, res) => {
+
+    const currentUser = req?.user;
+
+    if(!currentUser) {
+        throw new ApiError(StatusCodes.UNAUTHORIZED, "No user logged in.");
+    }
+
+    return res
+    .status(StatusCodes.OK)
+    .json(
+        new ApiResponse(StatusCodes.OK, currentUser, "Current user fetched successfully")
+    );
+
+});
+
 export {
     signUp,
     login,
-    logout
+    logout,
+    getMe
 }

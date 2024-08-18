@@ -7,26 +7,31 @@ import UserService from "../services/user.service.js";
 const checkAuth = asyncHandler( async (req, res, next) => {
 
     try {
+        //Getting the token from the Request object
         const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
         
         if(!token) {
-            throw new ApiError(StatusCodes.UNAUTHORIZED, "UnAuthorized");
+            throw new ApiError(StatusCodes.UNAUTHORIZED, "User not logged in.");
         }
 
+        //Decoding the token
         const decodedToken = decodeToken(token);
         console.log(`==> Decoded Token: ${decodedToken}`);
         
+        //Fetching the user based on user's id
         const user = await UserService.getUserById(decodedToken._id);
 
+        //Setting the user object onto the request object
         req.user = user;
 
+        //Calling the next function
         next();
 
     } catch (error) {
         if(error.message === 'Expired Token') {
-            throw new ApiError(StatusCodes.UNAUTHORIZED, "Token has been expired.");
-        } else if (error.message === 'UnAuthorized') {
-            throw new ApiError(StatusCodes.UNAUTHORIZED, "UnAuthorized");
+            throw new ApiError(StatusCodes.UNAUTHORIZED, error.message);
+        } else if (error.message === 'User not logged in.') {
+            throw new ApiError(StatusCodes.UNAUTHORIZED, error.message);
         } else {
             throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, "Something went wrong. Please try again.");
         }
