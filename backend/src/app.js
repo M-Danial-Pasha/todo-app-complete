@@ -19,7 +19,7 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 //All Routes
-import { UserRoutes } from "./routes";
+import { UserRoutes } from "./routes/index.js";
 
 app.use(`${baseURL}/auth`, UserRoutes);
 

@@ -1,22 +1,22 @@
-import { User } from "../models/user.model"
+import { User } from "../models/user.model.js"
 
-class UserService {
+export default class UserService {
+
+    constructor(){}
 
     //Create User
-    static async createUser (data) {
+    static createUser = async (data) => {
         return await User.create(data)
     }
 
     //Get User by id
-    static async getUserById(id) {
+    static getUserById = async (id) => {
         return await User.findById(id).select('-password');
     }
 
     //Get User by email
-    static async getUserByEmail(email) {
+    static getUserByEmail = async (email) => {
         return await User.findOne({ email }).select("-password");
     }
 
 }
-
-export default new UserService();

@@ -9,7 +9,7 @@ const connectionToDB = async () => {
             connectionInstance = await mongoose.connect(`${process.env.MONGODB_PRODUCTION_URL}`);
         } else if (process.env.MONGODB_STAGING_URL !== '') {
             connectionInstance = await mongoose.connect(`${process.env.MONGODB_STAGING_URL}`);
-        } else {
+        } else {         
             connectionInstance = await mongoose.connect(`${process.env.MONGODB_DEV_URL}/${process.env.MONGODB_DATABASE_NAME}`);
         }
         console.log(`MONGODB CONNECTED!! -- DB HOST: ${connectionInstance.connection.host}`);
