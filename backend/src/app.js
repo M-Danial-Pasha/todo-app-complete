@@ -19,9 +19,10 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 //All Routes
-import { UserRoutes } from "./routes/index.js";
+import { UserRoutes, TodosRoutes } from "./routes/index.js";
 
 app.use(`${baseURL}/auth`, UserRoutes);
+app.use(`${baseURL}/todo`, TodosRoutes);
 
 //Exporting the Express App
 export { app };

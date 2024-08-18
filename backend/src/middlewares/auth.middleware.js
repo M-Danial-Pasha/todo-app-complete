@@ -16,7 +16,6 @@ const checkAuth = asyncHandler( async (req, res, next) => {
 
         //Decoding the token
         const decodedToken = decodeToken(token);
-        console.log(`==> Decoded Token: ${decodedToken}`);
         
         //Fetching the user based on user's id
         const user = await UserService.getUserById(decodedToken._id);

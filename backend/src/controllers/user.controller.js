@@ -10,8 +10,6 @@ import { generateUserAccessToken, generateUserRefreshToken } from "../utils/Toke
 const signUp = asyncHandler( async (req, res) => {
 
     const { userName, email, password } = req.body;
-
-    console.log('Body: ', req.body);
     
     //Basic data validation
     if(
