@@ -4,7 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import StatusCodes from "http-status-codes";
 import UserService from "../services/user.service.js";
 import { hashPassword, comparePassword } from "../utils/Hash.js";
-import { generateUserAccessToken, generateUserRefreshToken } from "../utils/Tokens.js";
+import { generateUserAccessToken, generateUserRefreshToken, decodeRefreshToken } from "../utils/Tokens.js";
 
 //Sign Up User
 const signUp = asyncHandler( async (req, res) => {
@@ -167,9 +167,64 @@ const getMe = asyncHandler( async (req, res) => {
 
 });
 
+//Generate New Access and Refresh Tokens
+const generateNewAccessRefreshTokens = asyncHandler( async (req, res) => {
+
+    const refreshToken = req.cookies.refreshToken ?? undefined;
+
+    console.log('REFRESH TOKEN: ', refreshToken);
+
+    if(typeof refreshToken === "undefined") {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "No refresh token");
+    }
+
+    const decodedToken = decodeRefreshToken(refreshToken);
+
+    const user = await UserService.getUserById(decodedToken._id);
+
+    //Creating Payload for Access Token
+    const payloadForAccessToken = {
+        _id: user._id,
+        email: user.email,
+        isActive: user.is_active,
+        userName: user.user_name
+    }
+
+    //Creating Payload for Refresh Token
+    const payloadForRefreshToken = {
+        _id: user._id
+    }
+
+    const newAccessToken = generateUserAccessToken(payloadForAccessToken);
+    const newRefreshToken = generateUserRefreshToken(payloadForRefreshToken);
+
+    user.refresh_token = newRefreshToken;
+
+    //Creating Response data object
+    const responseData = {
+        user: user,
+        accessToken: newAccessToken
+    }
+
+    //Creating Cookies Options
+    const cookieOptions = {
+        httpOnly: true,
+        secure: true,
+    }
+
+    return res
+    .status(StatusCodes.OK)
+    .cookie("accessToken", newAccessToken, cookieOptions)
+    .cookie("refreshToken", newRefreshToken, cookieOptions)
+    .json(
+        new ApiResponse(StatusCodes.OK, responseData, "User successfully logged in.")
+    );
+});
+
 export {
     signUp,
     login,
     logout,
-    getMe
+    getMe,
+    generateNewAccessRefreshTokens
 }

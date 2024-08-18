@@ -14,7 +14,7 @@ export const generateUserAccessToken = (data) => {
 
 export const generateUserRefreshToken = (data) => {
     try {
-        let token = jwt.sign(data, process.env.REFRESH_TOKEN_EXPIRY, {
+        let token = jwt.sign(data, process.env.REFRESH_TOKEN_SECRET, {
             expiresIn: process.env.REFRESH_TOKEN_EXPIRY
         });
 
@@ -28,6 +28,18 @@ export const decodeToken = (token) => {
     try {
 
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+
+        return decodedToken;
+        
+    } catch (error) {
+        throw Error(`Expired Token`)
+    }
+}
+
+export const decodeRefreshToken = (token) => {
+    try {
+
+        const decodedToken = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
 
         return decodedToken;
         
