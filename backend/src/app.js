@@ -24,5 +24,12 @@ import { UserRoutes, TodosRoutes } from "./routes/index.js";
 app.use(`${baseURL}/auth`, UserRoutes);
 app.use(`${baseURL}/todo`, TodosRoutes);
 
+//Health Check Route
+app.get(`${baseURL}/health`, (req, res) => {
+    return res
+    .status(200)
+    .json({ status: 200, message: "System is up and running!!!" });
+})
+
 //Exporting the Express App
 export { app };

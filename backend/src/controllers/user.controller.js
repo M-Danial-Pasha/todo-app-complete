@@ -172,8 +172,6 @@ const generateNewAccessRefreshTokens = asyncHandler( async (req, res) => {
 
     const refreshToken = req.cookies.refreshToken ?? undefined;
 
-    console.log('REFRESH TOKEN: ', refreshToken);
-
     if(typeof refreshToken === "undefined") {
         throw new ApiError(StatusCodes.BAD_REQUEST, "No refresh token");
     }
