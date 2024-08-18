@@ -3,7 +3,8 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import StatusCodes from "http-status-codes";
 import UserService from "../services/user.service.js";
-import { hashPassword } from "../utils/Hash.js";
+import { hashPassword, comparePassword } from "../utils/Hash.js";
+import { generateUserAccessToken, generateUserRefreshToken } from "../utils/Tokens.js";
 
 //Sign Up User
 const signUp = asyncHandler( async (req, res) => {
@@ -14,7 +15,7 @@ const signUp = asyncHandler( async (req, res) => {
     
     //Basic data validation
     if(
-        [userName, email, password].map((val) => val?.trim() === "")
+        [userName, email, password].some((field) => field?.trim() === "")
     ) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Missing Required Fields");
     }
@@ -38,6 +39,7 @@ const signUp = asyncHandler( async (req, res) => {
 
     const newUser = await UserService.createUser(data);
 
+    //Getting the newly created User
     const getNewUser = await UserService.getUserById(newUser._id);
 
     if(!getNewUser) {
@@ -53,7 +55,74 @@ const signUp = asyncHandler( async (req, res) => {
 });
 
 //Login User
-const login = asyncHandler( async (req, res) => {});
+const login = asyncHandler( async (req, res) => {
+
+    const { email, password } = req.body;
+
+    // Basic data validation
+    if(
+        [email, password].some((field) => field?.trim() === "")
+    ) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Email and Password is required");
+    }
+
+    //Checking if user exists
+    const isUserExists = await UserService.getFullUserByEmail(email);
+
+    if(!isUserExists) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "User with this email does not exists");
+    }
+
+    //Checking if user's password is correct
+    const isPasswordCorrect = await comparePassword(password, isUserExists.password);
+
+    if(!isPasswordCorrect) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid user credentials.");
+    }
+
+    const user = await UserService.getUserByEmail(email);
+
+    //Creating Payload for Access Token
+    const payloadForAccessToken = {
+        _id: user._id,
+        email: user.email,
+        isActive: user.is_active,
+        userName: user.user_name
+    }
+
+    //Creating Payload for Refresh Token
+    const payloadForRefreshToken = {
+        _id: user._id
+    }
+
+    //Generating Access & Refresh Tokens
+    const accessToken = generateUserAccessToken(payloadForAccessToken);
+    const refreshToken = generateUserRefreshToken(payloadForRefreshToken);
+
+    //Saving the refresh token to user object
+    user.refresh_token = refreshToken;
+    user.save();
+    
+    //Creating Response data object
+    const responseData = {
+        user: user,
+        accessToken: accessToken
+    }
+
+    //Creating Cookies Options
+    const cookieOptions = {
+        httpOnly: true,
+        secure: true,
+    }
+
+    return res
+    .status(StatusCodes.OK)
+    .cookie("accessToken", accessToken, cookieOptions)
+    .cookie("refreshToken", refreshToken, cookieOptions)
+    .json(
+        new ApiResponse(StatusCodes.OK, responseData, "User successfully logged in.")
+    )
+});
 
 export {
     signUp,

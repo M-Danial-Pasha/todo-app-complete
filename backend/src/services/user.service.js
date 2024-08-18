@@ -19,4 +19,9 @@ export default class UserService {
         return await User.findOne({ email }).select("-password");
     }
 
+    //Get All Information about User
+    static getFullUserByEmail = async (email) => {
+        return await User.findOne({ email });
+    }
+
 }
